@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salem Children — Salem Evangelical Church</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#152A50;
+    --church-blue:#2E5EA8;
+    --sky:#E7F0FB;
+    --sky-2:#CFE1F7;
+    --white:#FFFFFF;
+    --gold:#F2B705;
+    --ink:#33415C;
+    --ink-soft:#5C6B85;
+    --radius:18px;
+    --shadow: 0 10px 30px rgba(21,42,80,0.12);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:'Nunito Sans', sans-serif;
+    color:var(--ink);
+    background:var(--white);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Baloo 2', sans-serif;
+    color:var(--navy);
+    margin:0;
+  }
+  a{color:inherit;text-decoration:none;}
+  img{max-width:100%;display:block;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px;}
+  button{font-family:inherit;cursor:pointer;}
+
+  /* Skip link for a11y */
+  .skip-link{position:absolute;left:-999px;top:0;background:var(--navy);color:#fff;padding:10px 16px;border-radius:0 0 8px 0;z-index:200;}
+  .skip-link:focus{left:0;}
+
+  :focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+
+  /* NAV */
+  header{
+    position:sticky;top:0;z-index:100;
+    background:var(--navy);
+    box-shadow:0 2px 14px rgba(0,0,0,0.12);
+  }
+  .nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 24px;max-width:1120px;margin:0 auto;
+  }
+  .brand{display:flex;align-items:center;gap:10px;color:#fff;}
+  .brand-mark{
+    width:48px;height:48px;border-radius:50%;
+    flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+    background:#fff;padding:1px;
+  }
+  .brand-mark svg{width:100%;height:100%;display:block;}
+  .brand-text{line-height:1.15;}
+  .brand-text .top{font-family:'Baloo 2';font-weight:700;font-size:16px;}
+  .brand-text .sub{font-size:11px;color:var(--sky-2);letter-spacing:.04em;}
+  .nav-links{display:flex;gap:6px;align-items:center;}
+  .nav-links a{
+    color:#DCE7F8;font-weight:700;font-size:14.5px;
+    padding:9px 14px;border-radius:999px;transition:background .15s, color .15s;
+  }
+  .nav-links a:hover{background:rgba(255,255,255,0.1);color:#fff;}
+  .nav-links a.active{background:var(--gold);color:var(--navy);}
+  .admin-btn{
+    background:transparent;border:1.5px solid rgba(255,255,255,0.35);color:#fff;
+    padding:8px 14px;border-radius:999px;font-weight:700;font-size:13.5px;
+  }
+  .admin-btn:hover{border-color:#fff;}
+  .burger{display:none;background:none;border:none;color:#fff;font-size:26px;padding:4px 8px;}
+  .mobile-panel{display:none;flex-direction:column;gap:2px;padding:10px 24px 18px;}
+  .mobile-panel a, .mobile-panel button{
+    color:#DCE7F8;font-weight:700;padding:12px 6px;border-bottom:1px solid rgba(255,255,255,0.08);
+    background:none;border-left:none;border-right:none;border-top:none;text-align:left;font-size:15px;
+  }
+
+  @media (max-width:760px){
+    .nav-links{display:none;}
+    .admin-btn{display:none;}
+    .burger{display:block;}
+    header.open .mobile-panel{display:flex;}
+  }
+
+  /* HERO */
+  .hero{
+    background:
+      radial-gradient(circle at 85% -10%, rgba(242,183,5,0.25), transparent 45%),
+      linear-gradient(180deg, var(--navy) 0%, #1B3563 100%);
+    color:#fff;padding:64px 0 90px;position:relative;overflow:hidden;
+  }
+  .hero .wrap{display:grid;grid-template-columns:1.1fr 0.9fr;gap:48px;align-items:center;}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);
+    padding:6px 14px;border-radius:999px;font-size:12.5px;font-weight:700;
+    letter-spacing:.05em;color:var(--sky-2);margin-bottom:18px;
+  }
+  .hero h1{font-size:42px;line-height:1.12;font-weight:800;color:#fff;}
+  .hero h1 span{color:var(--gold);}
+  .hero p.lead{margin-top:16px;color:#C9D8F2;font-size:16.5px;line-height:1.6;max-width:46ch;}
+  .hero-ctas{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap;}
+  .btn-primary{
+    background:var(--gold);color:var(--navy);font-weight:800;
+    padding:13px 22px;border-radius:999px;font-size:15px;border:none;
+    box-shadow:0 8px 20px rgba(242,183,5,0.3);
+  }
+  .btn-ghost{
+    background:transparent;border:1.5px solid rgba(255,255,255,0.4);color:#fff;
+    padding:13px 22px;border-radius:999px;font-size:15px;font-weight:700;
+  }
+
+  /* Signature: pinned verse card */
+  .verse-card{
+    background:#fff;border-radius:var(--radius);padding:28px 26px 24px;
+    box-shadow:var(--shadow);position:relative;color:var(--ink);
+    transform:rotate(-1.5deg);
+  }
+  .verse-card::before{
+    content:"THIS WEEK'S MEMORY VERSE";
+    position:absolute;top:-14px;left:24px;
+    background:var(--church-blue);color:#fff;font-family:'Baloo 2';
+    font-size:11.5px;font-weight:700;letter-spacing:.06em;
+    padding:6px 14px;border-radius:999px;box-shadow:0 4px 10px rgba(0,0,0,0.15);
+  }
+  .verse-card .pin{
+    position:absolute;top:-10px;right:26px;width:20px;height:20px;
+    background:var(--gold);border-radius:50%;box-shadow:0 3px 6px rgba(0,0,0,0.25);
+  }
+  .verse-card .ref{
+    font-family:'Baloo 2';color:var(--church-blue);font-weight:700;font-size:15px;margin-top:14px;
+  }
+  .verse-card .txt{margin-top:8px;font-size:17px;line-height:1.55;color:var(--navy);font-weight:600;}
+  .verse-card .teacher{margin-top:16px;font-size:13px;color:var(--ink-soft);border-top:1px dashed #D8E2F2;padding-top:12px;}
+
+  section{padding:76px 0;}
+  .section-head{max-width:640px;margin:0 auto 44px;text-align:center;}
+  .section-head .eyebrow-light{
+    display:inline-block;color:var(--church-blue);font-weight:800;font-size:12.5px;
+    letter-spacing:.08em;margin-bottom:10px;
+  }
+  .section-head h2{font-size:30px;}
+  .section-head p{color:var(--ink-soft);margin-top:10px;font-size:15.5px;line-height:1.6;}
+
+  /* ABOUT */
+  .about{background:var(--sky);}
+  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;}
+  .about-card{
+    background:#fff;border-radius:var(--radius);padding:30px;box-shadow:var(--shadow);
+  }
+  .about-card h3{font-size:19px;margin-bottom:8px;}
+  .about-card p{color:var(--ink-soft);font-size:14.5px;line-height:1.6;}
+  .value-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;}
+  .value{background:#fff;border-radius:14px;padding:18px;box-shadow:0 6px 16px rgba(21,42,80,0.08);}
+  .value .num{font-family:'Baloo 2';color:var(--gold);font-size:13px;font-weight:800;}
+  .value h4{font-family:'Baloo 2';color:var(--navy);font-size:15px;margin:6px 0 4px;}
+  .value p{font-size:13px;color:var(--ink-soft);margin:0;line-height:1.5;}
+
+  /* LESSON ARCHIVE */
+  .toolbar{
+    display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:36px;
+  }
+  .toolbar input, .toolbar select{
+    font-family:inherit;font-size:14.5px;padding:12px 16px;border-radius:999px;
+    border:1.5px solid var(--sky-2);background:#fff;color:var(--navy);
+  }
+  .toolbar input{flex:1;min-width:220px;}
+  .toolbar input:focus, .toolbar select:focus{border-color:var(--church-blue);}
+
+  /* Month switcher (year jump + prev/next) */
+  .month-switcher{
+    display:flex;align-items:center;justify-content:center;gap:18px;
+    margin-bottom:32px;
+  }
+  .switch-arrow{
+    width:42px;height:42px;border-radius:50%;border:1.5px solid var(--sky-2);
+    background:#fff;color:var(--church-blue);font-size:19px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    transition:background .15s,border-color .15s,color .15s;
+  }
+  .switch-arrow:hover{background:var(--church-blue);border-color:var(--church-blue);color:#fff;}
+  .switch-arrow:disabled{opacity:.35;pointer-events:none;}
+  .switch-center{
+    display:flex;flex-direction:column;align-items:center;gap:6px;min-width:200px;
+  }
+  .switch-month{
+    font-family:'Baloo 2';font-weight:800;font-size:20px;color:var(--navy);
+    text-align:center;
+  }
+  #yearJump{
+    font-family:'Nunito Sans';font-size:12.5px;font-weight:700;color:var(--church-blue);
+    border:1.5px solid var(--sky-2);border-radius:999px;padding:5px 14px;background:var(--sky);
+  }
+  #yearJump:focus{border-color:var(--church-blue);}
+  @media (max-width:520px){
+    .month-switcher{gap:10px;}
+    .switch-center{min-width:150px;}
+    .switch-month{font-size:17px;}
+  }
+
+  .lesson-list{display:flex;flex-direction:column;gap:36px;}
+
+  /* Month group */
+  .month-group{}
+  .month-head{
+    display:flex;align-items:baseline;gap:12px;margin-bottom:16px;
+    border-bottom:2px solid var(--sky-2);padding-bottom:10px;
+  }
+  .month-head h3{font-size:20px;color:var(--navy);}
+  .month-head .week-count{
+    font-size:12px;font-weight:800;color:var(--church-blue);background:var(--sky);
+    padding:4px 12px;border-radius:999px;white-space:nowrap;
+  }
+  .week-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+
+  .week-card{
+    position:relative;background:#fff;border:1.5px solid var(--sky-2);border-radius:16px;
+    padding:16px 18px 18px;transition:box-shadow .15s, border-color .15s;
+  }
+  .week-card:hover{box-shadow:var(--shadow);border-color:var(--church-blue);}
+  .week-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .week-num{
+    font-family:'Baloo 2';font-weight:800;font-size:12px;color:#fff;background:var(--church-blue);
+    padding:4px 10px;border-radius:999px;letter-spacing:.03em;
+  }
+  .week-date{font-size:12px;font-weight:700;color:var(--ink-soft);}
+  .week-card h4{font-family:'Baloo 2';font-size:16px;color:var(--navy);margin-bottom:4px;}
+  .week-card .verse-tag{
+    display:inline-block;font-size:11.5px;font-weight:700;color:#8A6300;background:#FFF3D2;
+    padding:3px 10px;border-radius:999px;margin-bottom:6px;
+  }
+  .week-card p{font-size:13px;color:var(--ink-soft);margin:0 0 12px;line-height:1.5;}
+  .lesson-open{
+    font-weight:800;font-size:13px;color:var(--church-blue);white-space:nowrap;
+    padding:8px 15px;border:1.5px solid var(--church-blue);border-radius:999px;display:inline-block;
+  }
+  .lesson-open:hover{background:var(--church-blue);color:#fff;}
+
+  .week-card.is-empty{border-style:dashed;background:var(--sky);}
+  .week-card.is-empty h4{color:var(--ink-soft);font-weight:700;font-size:14.5px;}
+  .week-card.is-empty .week-num{background:var(--sky-2);color:var(--ink-soft);}
+  .week-card.is-empty p{margin-bottom:0;}
+
+  .empty-state{
+    text-align:center;padding:40px 20px;color:var(--ink-soft);font-size:14.5px;display:none;
+  }
+
+  @media (max-width:600px){
+    .week-grid{grid-template-columns:1fr;}
+  }
+
+  /* GALLERY */
+  .gallery{background:var(--navy);}
+  .gallery .section-head h2, .gallery .section-head p{color:#fff;}
+  .gallery .section-head p{color:#B9C8E6;}
+  .gallery .eyebrow-light{color:var(--gold);}
+  .gallery-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:14px;
+  }
+  .g-item{
+    aspect-ratio:1/1;border-radius:14px;position:relative;overflow:hidden;
+    display:flex;align-items:flex-end;padding:12px;color:#fff;font-weight:700;font-size:13px;
+    font-family:'Baloo 2';background-size:cover;background-position:center;
+  }
+  .g-item::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.55) 100%);}
+  .g-item span{position:relative;z-index:1;}
+  .g1{background-image:url('https://images.unsplash.com/photo-1607988526937-dafe57186207?fm=jpg&q=70&w=700&auto=format&fit=crop');}
+  .g2{background-image:url('https://images.unsplash.com/photo-1632433795967-eba73ce54d81?fm=jpg&q=70&w=700&auto=format&fit=crop');}
+  .g3{background-image:url('https://images.unsplash.com/photo-1529488260486-8695a04beaee?fm=jpg&q=70&w=700&auto=format&fit=crop');}
+  .g4{background-image:url('https://images.unsplash.com/photo-1537655780520-1e392ead81f2?fm=jpg&q=70&w=700&auto=format&fit=crop');}
+  .g5{background-image:url('https://images.unsplash.com/photo-1593101635106-9b9fd62f3d32?fm=jpg&q=70&w=700&auto=format&fit=crop');}
+  .g6{background-image:url('https://images.unsplash.com/photo-1491439996916-067ed99cba60?fm=jpg&q=70&w=700&auto=format&fit=crop');}
+  .g7{background-image:url('https://images.unsplash.com/photo-1480388198291-d071e45ee9ca?fm=jpg&q=70&w=700&auto=format&fit=crop');}
+  .g8{background-image:url('https://images.unsplash.com/photo-1517164850305-99a3e65bb47e?fm=jpg&q=70&w=700&auto=format&fit=crop');}
+  @media (max-width:760px){.gallery-grid{grid-template-columns:repeat(2,1fr);}}
+
+  /* VIDEOS */
+  .video-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
+  .video-card{
+    border:1.5px solid var(--sky-2);border-radius:18px;padding:24px;
+    display:flex;gap:16px;align-items:flex-start;background:var(--sky);
+  }
+  .video-icon{
+    width:46px;height:46px;border-radius:12px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Baloo 2';font-weight:800;color:#fff;font-size:15px;
+  }
+  .fb-icon{background:#3B5998;}
+  .tt-icon{background:#111827;}
+  .video-card h4{font-family:'Baloo 2';color:var(--navy);font-size:16px;margin-bottom:4px;}
+  .video-card p{font-size:13.5px;color:var(--ink-soft);margin:0 0 12px;line-height:1.5;}
+  .video-link{font-weight:800;font-size:13.5px;color:var(--church-blue);}
+  .video-link:hover{text-decoration:underline;}
+  @media (max-width:640px){.video-grid{grid-template-columns:1fr;}}
+
+  /* FOOTER */
+  footer{background:var(--navy);color:#B9C8E6;padding:44px 0 26px;}
+  .footer-grid{display:flex;justify-content:space-between;flex-wrap:wrap;gap:24px;padding-bottom:24px;border-bottom:1px solid rgba(255,255,255,0.1);}
+  footer h5{font-family:'Baloo 2';color:#fff;font-size:15px;margin-bottom:8px;}
+  footer p{font-size:13px;margin:0;line-height:1.6;}
+  .footer-bottom{padding-top:20px;font-size:12.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  .proto-badge{
+    display:inline-block;background:rgba(242,183,5,0.15);color:var(--gold);
+    border:1px solid rgba(242,183,5,0.35);padding:3px 10px;border-radius:999px;font-weight:700;font-size:11px;
+  }
+
+  @media (max-width:900px){
+    .hero .wrap{grid-template-columns:1fr;}
+    .hero{padding:44px 0 70px;text-align:left;}
+    .about-grid{grid-template-columns:1fr;}
+    .verse-card{transform:rotate(0);margin-top:20px;}
+  }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<header id="siteHeader">
+  <div class="nav">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#8FCBEA"/>
+              <stop offset="100%" stop-color="#BEE3F5"/>
+            </linearGradient>
+            <path id="topArc" d="M 22,100 A 78,78 0 0 1 178,100"/>
+            <path id="bottomArc" d="M 30,130 A 70,70 0 0 0 170,130"/>
+          </defs>
+          <circle cx="100" cy="100" r="96" fill="#FFFFFF" stroke="#22235C" stroke-width="3"/>
+          <circle cx="100" cy="100" r="80" fill="#FFFFFF" stroke="#22235C" stroke-width="2.5"/>
+          <text font-family="Georgia, serif" font-weight="700" font-size="11.5" fill="#22235C" letter-spacing="0.5">
+            <textPath href="#topArc" startOffset="50%" text-anchor="middle">THE CHERUBIM &amp; SERAPHIM CHURCH OF NIGERIA</textPath>
+          </text>
+          <text font-family="Georgia, serif" font-weight="700" font-size="11.5" fill="#22235C" letter-spacing="0.5">
+            <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">SALEM EVANGELICAL CHURCH OF CHRIST</textPath>
+          </text>
+          <g fill="#C0392B">
+            <rect x="20" y="94" width="14" height="4"/>
+            <rect x="25" y="89" width="4" height="14"/>
+          </g>
+          <g fill="#C0392B">
+            <rect x="166" y="94" width="14" height="4"/>
+            <rect x="171" y="89" width="4" height="14"/>
+          </g>
+          <circle cx="100" cy="100" r="58" fill="url(#skyGrad)"/>
+          <clipPath id="emblemClip"><circle cx="100" cy="100" r="58"/></clipPath>
+          <g clip-path="url(#emblemClip)">
+            <rect x="52" y="112" width="96" height="34" fill="#2F3E8C"/>
+            <rect x="52" y="112" width="96" height="6" fill="#8B2E2E"/>
+            <rect x="60" y="120" width="6" height="26" fill="#F4F1E6"/>
+            <rect x="134" y="120" width="6" height="26" fill="#F4F1E6"/>
+            <path d="M 78,146 L 78,128 A 6,6 0 0 1 90,128 L 90,146 Z" fill="#F4F1E6"/>
+            <path d="M 110,146 L 110,128 A 6,6 0 0 1 122,128 L 122,146 Z" fill="#F4F1E6"/>
+            <rect x="86" y="66" width="28" height="80" fill="#F4F1E6"/>
+            <rect x="80" y="60" width="40" height="10" fill="#3A3A3A"/>
+            <path d="M 94,146 L 94,110 A 6,6 0 0 1 106,110 L 106,146 Z" fill="#2F3E8C"/>
+            <g fill="#22235C">
+              <rect x="98" y="42" width="4" height="20"/>
+              <rect x="92" y="48" width="16" height="4"/>
+            </g>
+            <g fill="#2F3E8C" opacity="0.8">
+              <rect x="82.5" y="130" width="3" height="10"/>
+              <rect x="79" y="134" width="10" height="3"/>
+            </g>
+            <g fill="#2F3E8C" opacity="0.8">
+              <rect x="114.5" y="130" width="3" height="10"/>
+              <rect x="111" y="134" width="10" height="3"/>
+            </g>
+            <rect x="40" y="146" width="120" height="16" fill="#8B2E2E"/>
+          </g>
+          <circle cx="100" cy="100" r="58" fill="none" stroke="#22235C" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="top">Salem Children</div>
+        <div class="sub">SALEM EVANGELICAL CHURCH</div>
+      </div>
+    </div>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#about" class="active">About Us</a>
+      <a href="#lessons">Lesson Archive</a>
+      <a href="#gallery">Photo Gallery</a>
+      <a href="#videos">Video Links</a>
+    </nav>
+    <button class="admin-btn" type="button">Teacher / Admin Sign In</button>
+    <button class="burger" id="burgerBtn" aria-label="Open menu" aria-expanded="false">☰</button>
+  </div>
+  <div class="mobile-panel" id="mobilePanel">
+    <a href="#about">About Us</a>
+    <a href="#lessons">Lesson Archive</a>
+    <a href="#gallery">Photo Gallery</a>
+    <a href="#videos">Video Links</a>
+    <button type="button">Teacher / Admin Sign In</button>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <span class="eyebrow">👦🧒 CHILDREN'S MINISTRY DIGITAL HOME</span>
+        <h1>Every lesson, every verse, <span>kept safe</span> — for every child at Salem.</h1>
+        <p class="lead">No more torn workbooks or missed Sunday classes. Browse past lessons, memory verses, photos, and videos from the children's ministry, anytime, on any device.</p>
+        <div class="hero-ctas">
+          <a href="#lessons" class="btn-primary">Browse Lesson Archive</a>
+          <a href="#about" class="btn-ghost">Meet the Ministry</a>
+        </div>
+      </div>
+      <div class="verse-card">
+        <span class="pin"></span>
+        <div class="ref">Joshua 1:9</div>
+        <div class="txt">"Be strong and courageous. Do not be afraid, for the Lord your God is with you wherever you go."</div>
+        <div class="teacher">Taught by Teacher Naomi · Primary Class (Ages 5–8)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about" id="about">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow-light">ABOUT US</span>
+        <h2>Raising children who know and love God's Word</h2>
+        <p>The Children's Ministry of Salem Evangelical Church exists to teach, disciple, and nurture children ages 5–15 in a safe, joyful space every Sunday.</p>
+      </div>
+      <div class="about-grid">
+        <div class="about-card">
+          <h3>Our Mission</h3>
+          <p>To teach every child at Salem the truth of Scripture in a way they can understand, remember, and carry with them all week long — through lessons, memory verses, songs, and hands-on activities.</p>
+          <div class="value-grid">
+            <div class="value"><span class="num">01</span><h4>Sunday Lessons</h4><p>Age-grouped classes every Sunday, now archived here so no child falls behind.</p></div>
+            <div class="value"><span class="num">02</span><h4>Memory Verses</h4><p>A new verse each week, kept in one place instead of a workbook that gets lost.</p></div>
+            <div class="value"><span class="num">03</span><h4>Community</h4><p>Photos and videos so parents can see what their children are learning.</p></div>
+            <div class="value"><span class="num">04</span><h4>Safe Access</h4><p>Only teachers and admins can upload; children and parents can view freely.</p></div>
+          </div>
+        </div>
+        <div class="about-card">
+          <h3>Our Vision</h3>
+          <p>A generation of children at Salem who grow up rooted in Scripture — able to find, revisit, and share what they've learned long after Sunday is over. This archive is our first step toward that: a simple, mobile-friendly home for every lesson we teach.</p>
+          <p style="margin-top:14px;">Led by our team of dedicated Sunday School teachers, in partnership with parents and church administrators.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LESSON ARCHIVE -->
+  <section id="lessons">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow-light">LESSON ARCHIVE</span>
+        <h2>Search past lessons and memory verses</h2>
+        <p>Every Sunday from August 2026 through 2030 has its own spot — archived and ready to revisit.</p>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" id="searchInput" placeholder="Search by topic or memory verse…" aria-label="Search lessons">
+      </div>
+
+      <div class="month-switcher" id="monthSwitcher">
+        <button type="button" class="switch-arrow" id="prevMonth" aria-label="Previous month">‹</button>
+        <div class="switch-center">
+          <span class="switch-month" id="monthLabel">August 2026</span>
+          <select id="yearJump" aria-label="Jump to year"></select>
+        </div>
+        <button type="button" class="switch-arrow" id="nextMonth" aria-label="Next month">›</button>
+      </div>
+
+      <div class="lesson-list" id="lessonList"></div>
+      <div class="empty-state" id="emptyState">No lessons match your search yet. Try a different topic or month.</div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="gallery" id="gallery">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow-light">PHOTO GALLERY</span>
+        <h2>Moments from our special events</h2>
+        <p>A peek into VBS, Children's Day, and Sunday class fun. Teachers add new photos after every event.</p>
+      </div>
+      <div class="gallery-grid">
+        <div class="g-item g1"><span>VBS 2026</span></div>
+        <div class="g-item g2"><span>Children's Day</span></div>
+        <div class="g-item g3"><span>Easter Party</span></div>
+        <div class="g-item g4"><span>Sunday Class</span></div>
+        <div class="g-item g5"><span>Christmas Play</span></div>
+        <div class="g-item g6"><span>Bible Quiz</span></div>
+        <div class="g-item g7"><span>Craft Corner</span></div>
+        <div class="g-item g8"><span>Outdoor Games</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIDEOS -->
+  <section id="videos">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow-light">VIDEO LINKS</span>
+        <h2>Catch up on recorded lessons</h2>
+        <p>Children aren't part of the main church live stream — here's where their own recordings live instead.</p>
+      </div>
+      <div class="video-grid">
+        <div class="video-card">
+          <div class="video-icon fb-icon">f</div>
+          <div>
+            <h4>Facebook — Children's Ministry Page</h4>
+            <p>Sunday class recaps and special event highlights, posted after each service.</p>
+            <a href="https://facebook.com" class="video-link" target="_blank" rel="noopener">Watch on Facebook →</a>
+          </div>
+        </div>
+        <div class="video-card">
+          <div class="video-icon tt-icon">♪</div>
+          <div>
+            <h4>TikTok — Short Verse Clips</h4>
+            <p>Quick, kid-friendly memory verse videos, perfect for revising on the go.</p>
+            <a href="https://tiktok.com" class="video-link" target="_blank" rel="noopener">Watch on TikTok →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <h5>Salem Children</h5>
+        <p>A ministry of Salem Evangelical Church.<br>Built for children, teachers, and parents.</p>
+      </div>
+      <div>
+        <h5>Quick Links</h5>
+        <p><a href="#about">About Us</a><br><a href="#lessons">Lesson Archive</a><br><a href="#gallery">Photo Gallery</a><br><a href="#videos">Video Links</a></p>
+      </div>
+      <div>
+        <h5>For Teachers &amp; Admins</h5>
+        <p>Sign in to upload lessons, verses, and event photos.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Salem Evangelical Church — Children's Ministry</span>
+      <span class="proto-badge">Prototype — not final content</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Mobile menu toggle
+  const header = document.getElementById('siteHeader');
+  const burger = document.getElementById('burgerBtn');
+  burger.addEventListener('click', () => {
+    const open = header.classList.toggle('open');
+    burger.setAttribute('aria-expanded', open);
+    burger.textContent = open ? '✕' : '☰';
+  });
+  document.querySelectorAll('.mobile-panel a').forEach(a => {
+    a.addEventListener('click', () => {
+      header.classList.remove('open');
+      burger.textContent = '☰';
+      burger.setAttribute('aria-expanded', false);
+    });
+  });
+
+  // Months covered by the archive: August 2026 through December 2030
+  const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const months = [];
+  for (let y = 2026; y <= 2030; y++){
+    const startMonth = (y === 2026) ? 7 : 0; // 2026 starts at August (index 7)
+    for (let mIdx = startMonth; mIdx <= 11; mIdx++){
+      months.push({ year: y, month: mIdx, name: `${MONTH_NAMES[mIdx]} ${y}` });
+    }
+  }
+
+  // Lesson content keyed by the Sunday's ISO date (YYYY-MM-DD).
+  // Any Sunday without an entry here renders as "not yet uploaded" —
+  // exactly the weekly upload workflow teachers/admins will use.
+  const lessonContent = {
+    "2026-08-02": { topic: "David and Goliath", verseRef: "1 Samuel 17:37", verseSummary: "God who protected me before will protect me now — courage comes from remembering His faithfulness." },
+    "2026-08-09": { topic: "The Lost Sheep", verseRef: "Luke 15:6", verseSummary: "God rejoices when even one lost person is found — we matter to Him individually." },
+    "2026-08-16": { topic: "Daniel in the Lion's Den", verseRef: "Daniel 6:22", verseSummary: "Staying faithful to God in hard moments brings His protection and rescue." },
+    "2026-09-06": { topic: "The Armor of God", verseRef: "Ephesians 6:11", verseSummary: "God equips us with spiritual tools to stand firm against temptation and fear." },
+    "2026-09-13": { topic: "Fruit of the Spirit", verseRef: "Galatians 5:22-23", verseSummary: "A life shaped by God's Spirit shows in patience, kindness, and self-control." },
+  };
+
+  // Returns every Sunday date in a given month as ISO strings (YYYY-MM-DD)
+  function getSundays(year, monthIndex){
+    const sundays = [];
+    const d = new Date(year, monthIndex, 1);
+    while (d.getDay() !== 0) d.setDate(d.getDate() + 1);
+    while (d.getMonth() === monthIndex){
+      const iso = d.toISOString().slice(0, 10);
+      sundays.push(iso);
+      d.setDate(d.getDate() + 7);
+    }
+    return sundays;
+  }
+
+  function formatShort(iso){
+    const d = new Date(iso + "T00:00:00");
+    return d.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  function buildMonthGroup(m){
+    const sundays = getSundays(m.year, m.month);
+    let weekCards = '';
+
+    sundays.forEach((iso, i) => {
+      const lesson = lessonContent[iso];
+      const weekLabel = `Week ${i + 1}`;
+
+      if (lesson){
+        weekCards += `
+          <div class="week-card">
+            <div class="week-top"><span class="week-num">${weekLabel}</span><span class="week-date">${formatShort(iso)}</span></div>
+            <span class="verse-tag">${lesson.verseRef}</span>
+            <h4>${lesson.topic}</h4>
+            <p>${lesson.verseSummary}</p>
+            <a href="#" class="lesson-open" onclick="return false;">View Lesson</a>
+          </div>`;
+      } else {
+        weekCards += `
+          <div class="week-card is-empty">
+            <div class="week-top"><span class="week-num">${weekLabel}</span><span class="week-date">${formatShort(iso)}</span></div>
+            <h4>Lesson not yet uploaded</h4>
+            <p>Teachers can add this Sunday's lesson and memory verse after class.</p>
+          </div>`;
+      }
+    });
+
+    return `
+      <div class="month-group">
+        <div class="month-head">
+          <h3>${m.name}</h3>
+          <span class="week-count">${sundays.length} Sunday${sundays.length > 1 ? 's' : ''}</span>
+        </div>
+        <div class="week-grid">${weekCards}</div>
+      </div>`;
+  }
+
+  const listEl = document.getElementById('lessonList');
+  const emptyEl = document.getElementById('emptyState');
+  const searchInput = document.getElementById('searchInput');
+  const switcherEl = document.getElementById('monthSwitcher');
+  const monthLabel = document.getElementById('monthLabel');
+  const yearJump = document.getElementById('yearJump');
+  const prevBtn = document.getElementById('prevMonth');
+  const nextBtn = document.getElementById('nextMonth');
+
+  // Populate the year-jump dropdown
+  const years = [...new Set(months.map(m => m.year))];
+  years.forEach(y => {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    yearJump.appendChild(opt);
+  });
+
+  let currentIndex = 0; // points into `months` — starts at August 2026
+
+  function renderBrowseMode(){
+    switcherEl.style.display = 'flex';
+    const m = months[currentIndex];
+    monthLabel.textContent = m.name;
+    yearJump.value = m.year;
+    prevBtn.disabled = currentIndex === 0;
+    nextBtn.disabled = currentIndex === months.length - 1;
+
+    listEl.innerHTML = buildMonthGroup(m);
+    emptyEl.style.display = 'none';
+  }
+
+  function renderSearchMode(q){
+    switcherEl.style.display = 'none';
+    let html = '';
+    let anyVisible = false;
+
+    months.forEach(m => {
+      const sundays = getSundays(m.year, m.month);
+      let weekCards = '';
+      let matches = 0;
+
+      sundays.forEach((iso, i) => {
+        const lesson = lessonContent[iso];
+        if (!lesson) return; // placeholder weeks have nothing to search
+        const haystack = (lesson.topic + ' ' + lesson.verseRef + ' ' + lesson.verseSummary).toLowerCase();
+        if (!haystack.includes(q)) return;
+
+        matches++;
+        weekCards += `
+          <div class="week-card">
+            <div class="week-top"><span class="week-num">Week ${i + 1}</span><span class="week-date">${formatShort(iso)}</span></div>
+            <span class="verse-tag">${lesson.verseRef}</span>
+            <h4>${lesson.topic}</h4>
+            <p>${lesson.verseSummary}</p>
+            <a href="#" class="lesson-open" onclick="return false;">View Lesson</a>
+          </div>`;
+      });
+
+      if (matches === 0) return;
+      anyVisible = true;
+      html += `
+        <div class="month-group">
+          <div class="month-head"><h3>${m.name}</h3></div>
+          <div class="week-grid">${weekCards}</div>
+        </div>`;
+    });
+
+    listEl.innerHTML = html;
+    emptyEl.style.display = anyVisible ? 'none' : 'block';
+  }
+
+  function render(){
+    const q = searchInput.value.trim().toLowerCase();
+    if (q) renderSearchMode(q);
+    else renderBrowseMode();
+  }
+
+  prevBtn.addEventListener('click', () => { if (currentIndex > 0){ currentIndex--; render(); } });
+  nextBtn.addEventListener('click', () => { if (currentIndex < months.length - 1){ currentIndex++; render(); } });
+  yearJump.addEventListener('change', () => {
+    const targetYear = Number(yearJump.value);
+    const idx = months.findIndex(m => m.year === targetYear);
+    if (idx !== -1){ currentIndex = idx; render(); }
+  });
+  searchInput.addEventListener('input', render);
+
+  render();
+</script>
+</body>
+</html>
