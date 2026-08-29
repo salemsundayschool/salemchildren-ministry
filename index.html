@@ -76,12 +76,73 @@
     padding:8px 14px;border-radius:999px;font-weight:700;font-size:13.5px;
   }
   .admin-btn:hover{border-color:#fff;}
+  .admin-btn.is-active{background:var(--gold);border-color:var(--gold);color:var(--navy);}
   .burger{display:none;background:none;border:none;color:#fff;font-size:26px;padding:4px 8px;}
   .mobile-panel{display:none;flex-direction:column;gap:2px;padding:10px 24px 18px;}
   .mobile-panel a, .mobile-panel button{
     color:#DCE7F8;font-weight:700;padding:12px 6px;border-bottom:1px solid rgba(255,255,255,0.08);
     background:none;border-left:none;border-right:none;border-top:none;text-align:left;font-size:15px;
   }
+
+  /* Admin login modal */
+  .admin-overlay{
+    position:fixed;inset:0;background:rgba(21,42,80,0.55);display:none;
+    align-items:center;justify-content:center;z-index:300;padding:20px;
+  }
+  .admin-overlay.show{display:flex;}
+  .admin-modal{
+    background:#fff;border-radius:18px;padding:28px 26px;max-width:360px;width:100%;
+    box-shadow:0 20px 50px rgba(21,42,80,0.35);
+  }
+  .admin-modal h3{font-family:'Baloo 2';color:var(--navy);font-size:20px;margin-bottom:6px;}
+  .admin-modal p{font-size:13px;color:var(--ink-soft);margin:0 0 18px;line-height:1.5;}
+  .admin-modal input{
+    width:100%;border:1.5px solid var(--sky-2);border-radius:10px;padding:11px 13px;
+    font-size:14px;font-family:inherit;margin-bottom:10px;background:var(--sky);color:var(--navy);
+  }
+  .admin-modal input:focus{border-color:var(--church-blue);}
+  .admin-error{color:#C0392B;font-size:12.5px;margin:-2px 0 12px;display:none;}
+  .admin-error.show{display:block;}
+  .admin-modal-actions{display:flex;gap:10px;margin-top:4px;}
+  .admin-modal-actions button{
+    flex:1;padding:11px;border-radius:10px;border:none;font-family:'Baloo 2';font-weight:700;font-size:14.5px;
+  }
+  .admin-cancel{background:var(--sky);color:var(--navy);}
+  .admin-submit{background:var(--church-blue);color:#fff;}
+  .admin-note{font-size:11.5px;color:#94A3BF;margin-top:14px;line-height:1.5;}
+
+  /* Admin mode banner + inline edit controls in Lesson Archive */
+  .admin-banner{
+    display:none;align-items:center;justify-content:space-between;gap:12px;
+    background:var(--gold);color:var(--navy);padding:12px 18px;border-radius:14px;
+    font-size:13px;font-weight:700;margin-bottom:22px;
+  }
+  .admin-banner.show{display:flex;}
+  .admin-banner button{
+    background:var(--navy);color:#fff;border:none;padding:7px 14px;border-radius:999px;
+    font-weight:700;font-size:12.5px;flex-shrink:0;
+  }
+  .week-card{position:relative;}
+  .week-edit-btn{
+    display:none;position:absolute;top:14px;right:14px;background:var(--church-blue);color:#fff;
+    border:none;width:28px;height:28px;border-radius:50%;font-size:13px;align-items:center;justify-content:center;
+    cursor:pointer;
+  }
+  .week-edit-btn.show{display:flex;}
+  .week-edit-form{display:none;flex-direction:column;gap:8px;margin-top:10px;}
+  .week-edit-form.show{display:flex;}
+  .week-edit-form input, .week-edit-form textarea{
+    border:1.5px solid var(--sky-2);border-radius:8px;padding:8px 10px;font-size:12.5px;
+    font-family:inherit;background:var(--sky);color:var(--navy);resize:vertical;
+  }
+  .week-edit-form .wef-row{display:flex;gap:14px;margin-top:2px;}
+  .week-edit-form .wef-row button{
+    flex:1;padding:8px;border-radius:8px;border:none;font-weight:700;font-size:12.5px;font-family:'Baloo 2';
+  }
+  .wef-save{background:var(--church-blue);color:#fff;}
+  .wef-cancel{background:var(--sky-2);color:var(--navy);}
+  .week-card.is-editing .week-static{display:none;}
+  .locked-note{font-size:11.5px;color:#94A3BF;font-style:italic;margin-top:8px;}
 
   @media (max-width:760px){
     .nav-links{display:none;}
@@ -174,6 +235,9 @@
   }
   .toolbar input{flex:1;min-width:220px;}
   .toolbar input:focus, .toolbar select:focus{border-color:var(--church-blue);}
+  .sync-status{font-size:12px;color:var(--ink-soft);white-space:nowrap;}
+  .sync-status.is-live{color:#1E7A4C;font-weight:700;}
+  .sync-status.is-error{color:#C0392B;font-weight:700;}
 
   /* Month switcher (year jump + prev/next) */
   .month-switcher{
@@ -392,7 +456,7 @@
       <a href="#gallery">Photo Gallery</a>
       <a href="#videos">Video Links</a>
     </nav>
-    <button class="admin-btn" type="button">Teacher / Admin Sign In</button>
+    <button class="admin-btn" id="adminBtnDesktop" type="button">Teacher / Admin Sign In</button>
     <button class="burger" id="burgerBtn" aria-label="Open menu" aria-expanded="false">☰</button>
   </div>
   <div class="mobile-panel" id="mobilePanel">
@@ -400,7 +464,7 @@
     <a href="#lessons">Lesson Archive</a>
     <a href="#gallery">Photo Gallery</a>
     <a href="#videos">Video Links</a>
-    <button type="button">Teacher / Admin Sign In</button>
+    <button type="button" id="adminBtnMobile">Teacher / Admin Sign In</button>
   </div>
 </header>
 
@@ -460,11 +524,17 @@
       <div class="section-head">
         <span class="eyebrow-light">LESSON ARCHIVE</span>
         <h2>Search past lessons and memory verses</h2>
-        <p>Every Sunday from August 2026 through 2030 has its own spot — archived and ready to revisit.</p>
+        <p>Every Sunday from the archive's first week in July 2026 through 2030 has its own spot — archived and ready to revisit.</p>
       </div>
 
       <div class="toolbar">
         <input type="text" id="searchInput" placeholder="Search by topic or memory verse…" aria-label="Search lessons">
+        <span class="sync-status" id="syncStatus"></span>
+      </div>
+
+      <div class="admin-banner" id="adminBanner">
+        <span>🔐 Admin mode is on — use the ✎ button on any week to add or edit its lesson (preview only, resets on reload).</span>
+        <button type="button" id="adminSignOutBtn">Sign Out</button>
       </div>
 
       <div class="month-switcher" id="monthSwitcher">
@@ -516,7 +586,7 @@
           <div>
             <h4>Facebook — Children's Ministry Page</h4>
             <p>Sunday class recaps and special event highlights, posted after each service.</p>
-            <a href="https://facebook.com" class="video-link" target="_blank" rel="noopener">Watch on Facebook →</a>
+            <a href="https://www.facebook.com/share/1DR1R9oN3d/?mibextid=wwXIfr" class="video-link" target="_blank" rel="noopener">Watch on Facebook →</a>
           </div>
         </div>
         <div class="video-card">
@@ -524,7 +594,7 @@
           <div>
             <h4>TikTok — Short Verse Clips</h4>
             <p>Quick, kid-friendly memory verse videos, perfect for revising on the go.</p>
-            <a href="https://tiktok.com" class="video-link" target="_blank" rel="noopener">Watch on TikTok →</a>
+            <a href="https://www.tiktok.com/@salem.evangelical?_r=1&_t=ZS-98qdauEbt48" class="video-link" target="_blank" rel="noopener">Watch on TikTok →</a>
           </div>
         </div>
       </div>
@@ -572,11 +642,15 @@
     });
   });
 
-  // Months covered by the archive: August 2026 through December 2030
+  // Months covered by the archive: July 2026 through December 2030.
+  // July 2026 is the archive's founding month — only its last Sunday
+  // (Week 4, July 26) is part of the archive; earlier Sundays that month
+  // are shown locked since the archive didn't exist yet.
   const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const ARCHIVE_START = "2026-07-26";
   const months = [];
   for (let y = 2026; y <= 2030; y++){
-    const startMonth = (y === 2026) ? 7 : 0; // 2026 starts at August (index 7)
+    const startMonth = (y === 2026) ? 6 : 0; // 2026 starts at July (index 6)
     for (let mIdx = startMonth; mIdx <= 11; mIdx++){
       months.push({ year: y, month: mIdx, name: `${MONTH_NAMES[mIdx]} ${y}` });
     }
@@ -585,13 +659,41 @@
   // Lesson content keyed by the Sunday's ISO date (YYYY-MM-DD).
   // Any Sunday without an entry here renders as "not yet uploaded" —
   // exactly the weekly upload workflow teachers/admins will use.
+  // The founding Sunday (July 26) uses `passages` for its unique two-part card.
   const lessonContent = {
+    "2026-07-26": {
+      special: true,
+      topic: "Joshua 9 & 10",
+      passages: [
+        {
+          tag: "🤝 Joshua 9",
+          text: "The Gibeonites feared Israel, so they disguised themselves as travelers from a distant land and tricked Joshua into making a peace treaty. Joshua didn't ask God for guidance before agreeing, and Israel kept the treaty after discovering the truth.",
+          lesson: "Seek God's guidance before making decisions, and keep your promises even when it's difficult."
+        },
+        {
+          tag: "⚔️ Joshua 10",
+          text: "Five Amorite kings attacked Gibeon because it had made peace with Israel. Joshua and the Israelites came to help, and God gave them victory by sending hailstones and making the sun stand still and the moon to stop (it indicates that time had stopped), allowing Israel to completely defeat their enemies.",
+          lesson: "God fights for those who trust and obey Him, and nothing is impossible for Him."
+        }
+      ]
+    },
     "2026-08-02": { topic: "David and Goliath", verseRef: "1 Samuel 17:37", verseSummary: "God who protected me before will protect me now — courage comes from remembering His faithfulness." },
     "2026-08-09": { topic: "The Lost Sheep", verseRef: "Luke 15:6", verseSummary: "God rejoices when even one lost person is found — we matter to Him individually." },
     "2026-08-16": { topic: "Daniel in the Lion's Den", verseRef: "Daniel 6:22", verseSummary: "Staying faithful to God in hard moments brings His protection and rescue." },
     "2026-09-06": { topic: "The Armor of God", verseRef: "Ephesians 6:11", verseSummary: "God equips us with spiritual tools to stand firm against temptation and fear." },
     "2026-09-13": { topic: "Fruit of the Spirit", verseRef: "Galatians 5:22-23", verseSummary: "A life shaped by God's Spirit shows in patience, kindness, and self-control." },
   };
+
+  // ---- Admin mode state (prototype only — no real backend) ----
+  const ADMIN_PASSWORD = "salem2026"; // demo passcode, not secure — for UAT/demo purposes only
+  let isAdmin = false;
+
+  function escapeHtml(str){
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function escapeAttr(str){
+    return escapeHtml(str).replace(/"/g,'&quot;');
+  }
 
   // Returns every Sunday date in a given month as ISO strings (YYYY-MM-DD)
   function getSundays(year, monthIndex){
@@ -611,6 +713,74 @@
     return d.toLocaleString('en-US', { month: 'short', day: 'numeric' });
   }
 
+  function lockedWeekHTML(weekLabel, iso){
+    return `
+      <div class="week-card is-locked" data-iso="${iso}">
+        <div class="week-top"><span class="week-num">${weekLabel}</span><span class="week-date">${formatShort(iso)}</span></div>
+        <h4>🔒 Not part of the archive</h4>
+        <p>This Sunday came before the archive began.</p>
+      </div>`;
+  }
+
+  function originCardHTML(weekLabel, iso, lesson){
+    const passagesHTML = lesson.passages.map((p, idx) => `
+      ${idx > 0 ? '<div class="origin-divider">✦</div>' : ''}
+      <div class="origin-passage">
+        <span class="op-tag">${p.tag}</span>
+        <p>${p.text}</p>
+        <div class="op-lesson">${p.lesson}</div>
+      </div>`).join('');
+    const adminNote = isAdmin ? `<p class="locked-note">🔐 This special-format entry isn't editable from the admin panel in this prototype.</p>` : '';
+
+    return `
+      <div class="week-card origin-entry" data-iso="${iso}">
+        <span class="origin-ribbon">📜 Where The Archive Begins</span>
+        <div class="origin-date">${weekLabel} · ${formatShort(iso)}, ${iso.slice(0,4)}</div>
+        <h3>${lesson.topic}</h3>
+        <p class="origin-note">The first Sunday ever kept in this archive.</p>
+        <div class="origin-passages">${passagesHTML}</div>
+        ${adminNote}
+      </div>`;
+  }
+
+  function normalWeekCardHTML(iso, weekLabel, lesson){
+    const topic = lesson ? lesson.topic : '';
+    const verseRef = lesson ? lesson.verseRef : '';
+    const verseSummary = lesson ? lesson.verseSummary : '';
+    const cardClass = lesson ? 'week-card' : 'week-card is-empty';
+
+    const editBtn = isAdmin
+      ? `<button type="button" class="week-edit-btn show" data-action="edit" data-iso="${iso}" aria-label="Edit this week's lesson">✎</button>`
+      : '';
+
+    const staticContent = lesson ? `
+      <div class="week-static">
+        <div class="week-top"><span class="week-num">${weekLabel}</span><span class="week-date">${formatShort(iso)}</span></div>
+        <span class="verse-tag">${lesson.verseRef}</span>
+        <h4>${lesson.topic}</h4>
+        <p>${lesson.verseSummary}</p>
+        <a href="#" class="lesson-open" onclick="return false;">View Lesson</a>
+      </div>` : `
+      <div class="week-static">
+        <div class="week-top"><span class="week-num">${weekLabel}</span><span class="week-date">${formatShort(iso)}</span></div>
+        <h4>Lesson not yet uploaded</h4>
+        <p>Teachers can add this Sunday's lesson and memory verse after class.</p>
+      </div>`;
+
+    const editForm = isAdmin ? `
+      <div class="week-edit-form" data-iso="${iso}">
+        <input type="text" class="wef-topic" placeholder="Lesson topic" value="${escapeAttr(topic)}">
+        <input type="text" class="wef-verseref" placeholder="Verse reference (e.g. John 3:16)" value="${escapeAttr(verseRef)}">
+        <textarea class="wef-summary" rows="3" placeholder="Memory verse / lesson summary">${escapeHtml(verseSummary)}</textarea>
+        <div class="wef-row">
+          <button type="button" class="wef-save" data-action="save" data-iso="${iso}">Save</button>
+          <button type="button" class="wef-cancel" data-action="cancel" data-iso="${iso}">Cancel</button>
+        </div>
+      </div>` : '';
+
+    return `<div class="${cardClass}" data-iso="${iso}">${editBtn}${staticContent}${editForm}</div>`;
+  }
+
   function buildMonthGroup(m){
     const sundays = getSundays(m.year, m.month);
     let weekCards = '';
@@ -619,22 +789,12 @@
       const lesson = lessonContent[iso];
       const weekLabel = `Week ${i + 1}`;
 
-      if (lesson){
-        weekCards += `
-          <div class="week-card">
-            <div class="week-top"><span class="week-num">${weekLabel}</span><span class="week-date">${formatShort(iso)}</span></div>
-            <span class="verse-tag">${lesson.verseRef}</span>
-            <h4>${lesson.topic}</h4>
-            <p>${lesson.verseSummary}</p>
-            <a href="#" class="lesson-open" onclick="return false;">View Lesson</a>
-          </div>`;
+      if (iso < ARCHIVE_START){
+        weekCards += lockedWeekHTML(weekLabel, iso);
+      } else if (lesson && lesson.special){
+        weekCards += originCardHTML(weekLabel, iso, lesson);
       } else {
-        weekCards += `
-          <div class="week-card is-empty">
-            <div class="week-top"><span class="week-num">${weekLabel}</span><span class="week-date">${formatShort(iso)}</span></div>
-            <h4>Lesson not yet uploaded</h4>
-            <p>Teachers can add this Sunday's lesson and memory verse after class.</p>
-          </div>`;
+        weekCards += normalWeekCardHTML(iso, weekLabel, lesson);
       }
     });
 
@@ -666,7 +826,7 @@
     yearJump.appendChild(opt);
   });
 
-  let currentIndex = 0; // points into `months` — starts at August 2026
+  let currentIndex = 0; // points into `months` — starts at July 2026
 
   function renderBrowseMode(){
     switcherEl.style.display = 'flex';
@@ -691,20 +851,21 @@
       let matches = 0;
 
       sundays.forEach((iso, i) => {
+        if (iso < ARCHIVE_START) return; // locked weeks hold no content to search
         const lesson = lessonContent[iso];
         if (!lesson) return; // placeholder weeks have nothing to search
-        const haystack = (lesson.topic + ' ' + lesson.verseRef + ' ' + lesson.verseSummary).toLowerCase();
+
+        const weekLabel = `Week ${i + 1}`;
+        let haystack;
+        if (lesson.special){
+          haystack = (lesson.topic + ' ' + lesson.passages.map(p => p.tag + ' ' + p.text + ' ' + p.lesson).join(' ')).toLowerCase();
+        } else {
+          haystack = (lesson.topic + ' ' + lesson.verseRef + ' ' + lesson.verseSummary).toLowerCase();
+        }
         if (!haystack.includes(q)) return;
 
         matches++;
-        weekCards += `
-          <div class="week-card">
-            <div class="week-top"><span class="week-num">Week ${i + 1}</span><span class="week-date">${formatShort(iso)}</span></div>
-            <span class="verse-tag">${lesson.verseRef}</span>
-            <h4>${lesson.topic}</h4>
-            <p>${lesson.verseSummary}</p>
-            <a href="#" class="lesson-open" onclick="return false;">View Lesson</a>
-          </div>`;
+        weekCards += lesson.special ? originCardHTML(weekLabel, iso, lesson) : normalWeekCardHTML(iso, weekLabel, lesson);
       });
 
       if (matches === 0) return;
@@ -735,7 +896,215 @@
   });
   searchInput.addEventListener('input', render);
 
+  // Edit / Save / Cancel clicks inside lesson cards (event delegation, since
+  // cards are re-rendered often)
+  listEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const iso = btn.getAttribute('data-iso');
+    const card = btn.closest('.week-card');
+    const action = btn.getAttribute('data-action');
+
+    if (action === 'edit'){
+      card.classList.add('is-editing');
+      const form = card.querySelector('.week-edit-form');
+      if (form) form.classList.add('show');
+    } else if (action === 'cancel'){
+      render(); // discard — just redraw from saved data
+    } else if (action === 'save'){
+      const form = card.querySelector('.week-edit-form');
+      const topic = form.querySelector('.wef-topic').value.trim();
+      const verseRef = form.querySelector('.wef-verseref').value.trim();
+      const verseSummary = form.querySelector('.wef-summary').value.trim();
+      if (!topic || !verseSummary){
+        alert("Please fill in at least a topic and a lesson/verse summary.");
+        return;
+      }
+      lessonContent[iso] = { topic, verseRef, verseSummary };
+      render();
+    }
+  });
+
+  // ---- Admin sign-in modal ----
+  const adminOverlay = document.getElementById('adminOverlay');
+  const adminPasswordInput = document.getElementById('adminPasswordInput');
+  const adminError = document.getElementById('adminError');
+  const adminCancelBtn = document.getElementById('adminCancelBtn');
+  const adminSubmitBtn = document.getElementById('adminSubmitBtn');
+  const adminBanner = document.getElementById('adminBanner');
+  const adminSignOutBtn = document.getElementById('adminSignOutBtn');
+  const adminBtnDesktop = document.getElementById('adminBtnDesktop');
+  const adminBtnMobile = document.getElementById('adminBtnMobile');
+
+  function openAdminModal(){
+    adminOverlay.classList.add('show');
+    adminError.classList.remove('show');
+    adminPasswordInput.value = '';
+    adminPasswordInput.focus();
+  }
+  function closeAdminModal(){ adminOverlay.classList.remove('show'); }
+
+  function setAdminButtonsLabel(){
+    const label = isAdmin ? 'Admin Mode ✓' : 'Teacher / Admin Sign In';
+    adminBtnDesktop.textContent = label;
+    adminBtnMobile.textContent = label;
+    adminBtnDesktop.classList.toggle('is-active', isAdmin);
+  }
+
+  adminBtnDesktop.addEventListener('click', () => { if (!isAdmin) openAdminModal(); });
+  adminBtnMobile.addEventListener('click', () => { if (!isAdmin) openAdminModal(); });
+  adminCancelBtn.addEventListener('click', closeAdminModal);
+  adminOverlay.addEventListener('click', (e) => { if (e.target === adminOverlay) closeAdminModal(); });
+  adminPasswordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') adminSubmitBtn.click(); });
+
+  adminSubmitBtn.addEventListener('click', () => {
+    if (adminPasswordInput.value === ADMIN_PASSWORD){
+      isAdmin = true;
+      closeAdminModal();
+      setAdminButtonsLabel();
+      adminBanner.classList.add('show');
+      render();
+    } else {
+      adminError.classList.add('show');
+    }
+  });
+
+  adminSignOutBtn.addEventListener('click', () => {
+    isAdmin = false;
+    setAdminButtonsLabel();
+    adminBanner.classList.remove('show');
+    render();
+  });
+
   render();
+
+  // ============================================================
+  // GOOGLE SHEET SYNC — the real, persistent way for teachers to
+  // add lessons. Fill out the linked Google Form; every submission
+  // lands in a Sheet; this fetches that Sheet's published CSV and
+  // merges it into lessonContent so every visitor sees it.
+  //
+  // HOW TO SET THIS UP:
+  // 1. Create a Google Form with 4 questions in this exact order:
+  //    "Sunday Date" (Date), "Lesson Topic" (Short answer),
+  //    "Verse Reference" (Short answer), "Verse Summary" (Paragraph)
+  // 2. In the Form's Responses tab, click the Sheets icon to create
+  //    a linked spreadsheet.
+  // 3. In that Sheet: File > Share > Publish to web > select the
+  //    response sheet/tab > format "Comma-separated values (.csv)"
+  //    > Publish. Copy the link it gives you.
+  // 4. Paste that link below as SHEET_CSV_URL.
+  // 5. Only share the Google Form link privately with your approved
+  //    teachers/admins (don't post it publicly) — and turn on
+  //    "Restrict to users in [your org]" or "Requires sign-in" in
+  //    the Form's settings so submissions are tied to a real Google
+  //    account, not anonymous.
+  // ============================================================
+  const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSiZRSrXnSdApvCKW7JbuIhIW4CUps5nfwxNigY6ivLNqJvSSO68cNWhT1QYNNtIp3634H1dCp0HPm/pub?output=csv";
+
+  const syncStatusEl = document.getElementById('syncStatus');
+
+  function parseCSV(text){
+    const rows = [];
+    let row = [], field = '', inQuotes = false;
+    for (let i = 0; i < text.length; i++){
+      const c = text[i];
+      if (inQuotes){
+        if (c === '"'){
+          if (text[i + 1] === '"'){ field += '"'; i++; }
+          else inQuotes = false;
+        } else field += c;
+      } else {
+        if (c === '"') inQuotes = true;
+        else if (c === ','){ row.push(field); field = ''; }
+        else if (c === '\n' || c === '\r'){
+          if (c === '\r' && text[i + 1] === '\n') i++;
+          row.push(field); field = '';
+          rows.push(row); row = [];
+        } else field += c;
+      }
+    }
+    if (field.length || row.length){ row.push(field); rows.push(row); }
+    return rows.filter(r => r.length > 1 || (r[0] && r[0].trim() !== ''));
+  }
+
+  function parseSheetDate(str){
+    if (!str) return null;
+    str = str.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str; // already ISO
+    const m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // Google Forms default: M/D/YYYY
+    if (m){
+      const [, mo, da, yr] = m;
+      return `${yr}-${mo.padStart(2, '0')}-${da.padStart(2, '0')}`;
+    }
+    return null;
+  }
+
+  async function loadLessonsFromSheet(){
+    if (!SHEET_CSV_URL){
+      if (syncStatusEl) syncStatusEl.textContent = '';
+      return;
+    }
+    if (syncStatusEl) syncStatusEl.textContent = 'Loading latest lessons…';
+    try {
+      const res = await fetch(SHEET_CSV_URL);
+      if (!res.ok) throw new Error('Sheet fetch failed: ' + res.status);
+      const text = await res.text();
+      const rows = parseCSV(text);
+      if (rows.length < 2) throw new Error('Sheet has no submissions yet');
+
+      const header = rows[0].map(h => h.trim().toLowerCase());
+      const dateIdx = header.findIndex(h => h.includes('date'));
+      const topicIdx = header.findIndex(h => h.includes('topic'));
+      const summaryIdx = header.findIndex(h => h.includes('summary'));
+      const verseRefIdx = header.findIndex((h, idx) => idx !== summaryIdx && (h.includes('reference') || h.includes('verse')));
+
+      let addedCount = 0;
+      for (let i = 1; i < rows.length; i++){
+        const row = rows[i];
+        const iso = parseSheetDate(row[dateIdx]);
+        if (!iso) continue;
+        if (iso < ARCHIVE_START) continue; // don't let sheet rows override locked/pre-archive weeks
+        const existing = lessonContent[iso];
+        if (existing && existing.special) continue; // never override the founding entry
+        lessonContent[iso] = {
+          topic: (row[topicIdx] || '').trim(),
+          verseRef: (row[verseRefIdx] || '').trim(),
+          verseSummary: (row[summaryIdx] || '').trim()
+        };
+        addedCount++;
+      }
+
+      if (syncStatusEl){
+        syncStatusEl.textContent = `✓ Synced (${addedCount} lesson${addedCount === 1 ? '' : 's'} from Google Sheet)`;
+        syncStatusEl.classList.add('is-live');
+      }
+      render();
+    } catch (err){
+      console.warn('Could not load lessons from Google Sheet:', err);
+      if (syncStatusEl){
+        syncStatusEl.textContent = 'Could not load live lesson data — showing saved defaults.';
+        syncStatusEl.classList.add('is-error');
+      }
+    }
+  }
+
+  loadLessonsFromSheet();
 </script>
-</body>
-</html>
+<div class="admin-overlay" id="adminOverlay">
+  <div class="admin-modal">
+    <h3>Teacher / Admin Sign In</h3>
+    <p>Enter the ministry admin passcode to unlock lesson editing for this preview.</p>
+    <input type="password" id="adminPasswordInput" placeholder="Passcode" autocomplete="off">
+    <p class="admin-error" id="adminError">Incorrect passcode. Please try again.</p>
+    <div class="admin-modal-actions">
+      <button type="button" class="admin-cancel" id="adminCancelBtn">Cancel</button>
+      <button type="button" class="admin-submit" id="adminSubmitBtn">Sign In</button>
+    </div>
+    <p class="admin-note">Prototype only — this passcode isn't secure, and lesson edits made in Admin Mode are for demo purposes and reset when the page reloads.</p>
+  </div>
+</div>
+
+</bo... (1 KB left)
+secc-kids-archive-8-9.html
+51 KB
