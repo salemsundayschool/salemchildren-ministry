@@ -72,11 +72,23 @@
   .nav-links a:hover{background:rgba(255,255,255,0.1);color:#fff;}
   .nav-links a.active{background:var(--gold);color:var(--navy);}
   .admin-btn{
-    background:transparent;border:1.5px solid rgba(255,255,255,0.35);color:#fff;
-    padding:8px 14px;border-radius:999px;font-weight:700;font-size:13.5px;
+    background:linear-gradient(135deg,#F2B705,#FF8A3D);border:none;color:#152A50;
+    padding:10px 18px;border-radius:999px;font-weight:800;font-size:13.5px;
+    box-shadow:0 4px 14px rgba(242,183,5,0.45);cursor:pointer;
+    transition:transform .15s, box-shadow .15s;
   }
-  .admin-btn:hover{border-color:#fff;}
-  .admin-btn.is-active{background:var(--gold);border-color:var(--gold);color:var(--navy);}
+  .admin-btn::before{content:"🔒 ";}
+  .admin-btn:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 8px 20px rgba(242,183,5,0.6);}
+  .admin-btn.is-active{background:#2ECC71;color:#fff;box-shadow:0 4px 14px rgba(46,204,113,0.45);}
+  .admin-btn.is-active::before{content:"";}
+  #adminBtnMobile{
+    background:linear-gradient(135deg,#F2B705,#FF8A3D);color:#152A50;border:none;border-radius:999px;
+    text-align:center;margin-top:10px;padding:13px 6px;font-weight:800;
+    box-shadow:0 4px 14px rgba(242,183,5,0.45);
+  }
+  #adminBtnMobile::before{content:"🔒 ";}
+  #adminBtnMobile.is-active{background:#2ECC71;color:#fff;}
+  #adminBtnMobile.is-active::before{content:"";}
   .burger{display:none;background:none;border:none;color:#fff;font-size:26px;padding:4px 8px;}
   .mobile-panel{display:none;flex-direction:column;gap:2px;padding:10px 24px 18px;}
   .mobile-panel a, .mobile-panel button{
@@ -312,6 +324,20 @@
   .week-card.is-empty h4{color:var(--ink-soft);font-weight:700;font-size:14.5px;}
   .week-card.is-empty .week-num{background:var(--sky-2);color:var(--ink-soft);}
   .week-card.is-empty p{margin-bottom:0;}
+  .week-card.is-empty .week-static{cursor:pointer;}
+  .week-card.is-empty{
+    background:repeating-linear-gradient(135deg,var(--sky) 0 10px,#EEF4FD 10px 20px);
+    transition:transform .15s, box-shadow .15s, border-color .15s;
+  }
+  .week-card.is-empty:hover{transform:translateY(-3px);}
+  .empty-cta{
+    display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:12.5px;font-weight:800;
+    color:var(--church-blue);background:#fff;border:1.5px dashed var(--church-blue);
+    padding:6px 12px;border-radius:999px;
+  }
+  .week-card.is-empty:hover .empty-cta{background:var(--church-blue);color:#fff;}
+  .week-card.is-flash{animation:flash 1.2s ease;}
+  @keyframes flash{0%,100%{box-shadow:none}30%{box-shadow:0 0 0 4px var(--gold)}}
 
   .empty-state{
     text-align:center;padding:40px 20px;color:var(--ink-soft);font-size:14.5px;display:none;
@@ -384,9 +410,9 @@
   }
 </style>
 <!-- Firebase: real admin accounts + a real lesson database -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script>
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyBLwLpTKQmhKE6iv_v7fNJ69S0nG0NtOcc",
@@ -642,6 +668,22 @@
   </div>
 </footer>
 
+<div class="admin-overlay" id="adminOverlay">
+  <div class="admin-modal">
+    <h3>Teacher / Admin Sign In</h3>
+    <p id="adminModalMsg">Sign in with your approved email and password to add or edit lessons.</p>
+    <input type="email" id="adminEmailInput" placeholder="Email address" autocomplete="off">
+    <input type="password" id="adminPasswordInput" placeholder="Password" autocomplete="off">
+    <p class="admin-error" id="adminError">Incorrect email or password. Please try again.</p>
+    <div class="admin-modal-actions">
+      <button type="button" class="admin-cancel" id="adminCancelBtn">Cancel</button>
+      <button type="button" class="admin-submit" id="adminSubmitBtn">Sign In</button>
+    </div>
+    <p class="admin-note">Only approved teachers/admins can sign in. Lessons saved here are permanent and visible to every visitor.</p>
+  </div>
+</div>
+
+
 <script>
   // Mobile menu toggle
   const header = document.getElementById('siteHeader');
@@ -717,7 +759,7 @@
     const d = new Date(year, monthIndex, 1);
     while (d.getDay() !== 0) d.setDate(d.getDate() + 1);
     while (d.getMonth() === monthIndex){
-      const iso = d.toISOString().slice(0, 10);
+      const iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       sundays.push(iso);
       d.setDate(d.getDate() + 7);
     }
@@ -777,10 +819,11 @@
         <p>${lesson.verseSummary}</p>
         <a href="#" class="lesson-open" onclick="return false;">View Lesson</a>
       </div>` : `
-      <div class="week-static">
+      <div class="week-static" data-action="add-empty" data-iso="${iso}">
         <div class="week-top"><span class="week-num">${weekLabel}</span><span class="week-date">${formatShort(iso)}</span></div>
         <h4>Lesson not yet uploaded</h4>
         <p>Teachers can add this Sunday's lesson and memory verse after class.</p>
+        <span class="empty-cta">${isAdmin ? '✎ Tap to add this lesson' : '🔒 Teacher? Tap to sign in'}</span>
       </div>`;
 
     const editForm = isAdmin ? `
@@ -921,7 +964,16 @@
     const card = btn.closest('.week-card');
     const action = btn.getAttribute('data-action');
 
-    if (action === 'edit'){
+    if (action === 'add-empty'){
+      if (isAdmin){
+        card.classList.add('is-editing');
+        const f = card.querySelector('.week-edit-form');
+        if (f) f.classList.add('show');
+      } else {
+        pendingEditIso = iso;
+        openAdminModal('This lesson hasn\'t been added yet. If you are a teacher, sign in to add it.');
+      }
+    } else if (action === 'edit'){
       card.classList.add('is-editing');
       const form = card.querySelector('.week-edit-form');
       if (form) form.classList.add('show');
@@ -964,20 +1016,25 @@
   const adminBtnDesktop = document.getElementById('adminBtnDesktop');
   const adminBtnMobile = document.getElementById('adminBtnMobile');
 
-  function openAdminModal(){
+  const adminModalMsg = document.getElementById('adminModalMsg');
+  const DEFAULT_MODAL_MSG = 'Sign in with your approved email and password to add or edit lessons.';
+  let pendingEditIso = null;
+  function openAdminModal(msg){
+    adminModalMsg.textContent = (typeof msg === 'string') ? msg : DEFAULT_MODAL_MSG;
     adminOverlay.classList.add('show');
     adminError.classList.remove('show');
     adminEmailInput.value = '';
     adminPasswordInput.value = '';
     adminEmailInput.focus();
   }
-  function closeAdminModal(){ adminOverlay.classList.remove('show'); }
+  function closeAdminModal(){ adminOverlay.classList.remove('show'); pendingEditIso = null; }
 
   function setAdminButtonsLabel(){
     const label = isAdmin ? 'Admin Mode ✓' : 'Teacher / Admin Sign In';
     adminBtnDesktop.textContent = label;
     adminBtnMobile.textContent = label;
     adminBtnDesktop.classList.toggle('is-active', isAdmin);
+    adminBtnMobile.classList.toggle('is-active', isAdmin);
   }
 
   adminBtnDesktop.addEventListener('click', () => { if (!isAdmin) openAdminModal(); });
@@ -1001,108 +1058,22 @@
 
     auth.signInWithEmailAndPassword(email, password)
       .then(() => {
+        const iso = pendingEditIso;
         closeAdminModal();
+        if (iso){
+          // auth state change re-renders the list; then open the editor for the lesson they tapped
+          setTimeout(() => {
+            const card = document.querySelector('.week-card[data-iso="' + iso + '"]');
+            if (card){
+              card.classList.add('is-editing', 'is-flash');
+              const f = card.querySelector('.week-edit-form');
+              if (f) f.classList.add('show');
+              card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 300);
+        }
       })
       .catch((err) => {
-        console.warn('Sign-in failed:', err.code);
-        adminError.textContent = 'Incorrect email or password. Please try again.';
-        adminError.classList.add('show');
-      })
-      .finally(() => {
-        adminSubmitBtn.disabled = false;
-        adminSubmitBtn.textContent = 'Sign In';
-      });
-  });
-
-  adminSignOutBtn.addEventListener('click', () => {
-    auth.signOut();
-  });
-
-  // Reacts to real sign-in/sign-out, and keeps someone signed in across reloads
-  auth.onAuthStateChanged((user) => {
-    isAdmin = !!user;
-    setAdminButtonsLabel();
-    adminBanner.classList.toggle('show', isAdmin);
-    render();
-  });
-
-  render();
-
-  // ============================================================
-  // GOOGLE SHEET SYNC — the real, persistent way for teachers to
-  // add lessons. Fill out the linked Google Form; every submission
-  // lands in a Sheet; this fetches that Sheet's published CSV and
-  // merges it into lessonContent so every visitor sees it.
-  //
-  // HOW TO SET THIS UP:
-  // 1. Create a Google Form with 4 questions in this exact order:
-  //    "Sunday Date" (Date), "Lesson Topic" (Short answer),
-  //    "Verse Reference" (Short answer), "Verse Summary" (Paragraph)
-  // 2. In the Form's Responses tab, click the Sheets icon to create
-  //    a linked spreadsheet.
-  // 3. In that Sheet: File > Share > Publish to web > select the
-  //    response sheet/tab > format "Comma-separated values (.csv)"
-  //    > Publish. Copy the link it gives you.
-  // 4. Paste that link below as SHEET_CSV_URL.
-  // 5. Only share the Google Form link privately with your approved
-  //    teachers/admins (don't post it publicly) — and turn on
-  //    "Restrict to users in [your org]" or "Requires sign-in" in
-  //    the Form's settings so submissions are tied to a real Google
-  //    account, not anonymous.
-  // ============================================================
-  const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSiZRSrXnSdApvCKW7JbuIhIW4CUps5nfwxNigY6ivLNqJvSSO68cNWhT1QYNNtIp3634H1dCp0HPm/pub?output=csv";
-
-  const syncStatusEl = document.getElementById('syncStatus');
-
-  function parseCSV(text){
-    const rows = [];
-    let row = [], field = '', inQuotes = false;
-    for (let i = 0; i < text.length; i++){
-      const c = text[i];
-      if (inQuotes){
-        if (c === '"'){
-          if (text[i + 1] === '"'){ field += '"'; i++; }
-          else inQuotes = false;
-        } else field += c;
-      } else {
-        if (c === '"') inQuotes = true;
-        else if (c === ','){ row.push(field); field = ''; }
-        else if (c === '\n' || c === '\r'){
-          if (c === '\r' && text[i + 1] === '\n') i++;
-          row.push(field); field = '';
-          rows.push(row); row = [];
-        } else field += c;
-      }
-    }
-    if (field.length || row.length){ row.push(field); rows.push(row); }
-    return rows.filter(r => r.length > 1 || (r[0] && r[0].trim() !== ''));
-  }
-
-  function parseSheetDate(str){
-    if (!str) return null;
-    str = str.trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str; // already ISO
-    const m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // Google Forms default: M/D/YYYY
-    if (m){
-      const [, mo, da, yr] = m;
-      return `${yr}-${mo.padStart(2, '0')}-${da.padStart(2, '0')}`;
-    }
-    return null;
-  }
-
-  async function loadLessonsFromSheet(){
-    if (!SHEET_CSV_URL){
-      if (syncStatusEl) syncStatusEl.textContent = '';
-      return;
-    }
-    if (syncStatusEl) syncStatusEl.textContent = 'Loading latest lessons…';
-    try {
-      const res = await fetch(SHEET_CSV_URL);
-      if (!res.ok) throw new Error('Sheet fetch failed: ' + res.status);
-      const text = await res.text();
-      const rows = parseCSV(text);
-      if (rows.length < 2) throw new Error('Sheet has no submissions yet');
-
-      const header = rows[0].map(h => h.trim().toLowerCase());
-      const dateIdx = header.findIndex(h => h.includes('date'));
-      const topicIdx = header.fi... (4 KB left)
+        console.error('Sign-in failed:', err.code, err.message);
+        const msgs = {
+          'auth/invalid-credential': 'Incorrect email or passwor... (8 KB left)
