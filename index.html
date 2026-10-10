@@ -383,6 +383,23 @@
     .verse-card{transform:rotate(0);margin-top:20px;}
   }
 </style>
+<!-- Firebase: real admin accounts + a real lesson database -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBLwLpTKQmhKE6iv_v7fNJ69S0nG0NtOcc",
+    authDomain: "salem-children.firebaseapp.com",
+    projectId: "salem-children",
+    storageBucket: "salem-children.firebasestorage.app",
+    messagingSenderId: "343445039718",
+    appId: "1:343445039718:web:1c70b183129b51e5081ba7"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+</script>
 </head>
 <body>
 <a href="#main" class="skip-link">Skip to content</a>
@@ -685,7 +702,6 @@
   };
 
   // ---- Admin mode state (prototype only — no real backend) ----
-  const ADMIN_PASSWORD = "salem2026"; // demo passcode, not secure — for UAT/demo purposes only
   let isAdmin = false;
 
   function escapeHtml(str){
@@ -920,13 +936,25 @@
         alert("Please fill in at least a topic and a lesson/verse summary.");
         return;
       }
-      lessonContent[iso] = { topic, verseRef, verseSummary };
-      render();
+      const saveBtn = form.querySelector('.wef-save');
+      if (saveBtn){ saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
+
+      db.collection('lessons').doc(iso).set({ topic, verseRef, verseSummary })
+        .then(() => {
+          lessonContent[iso] = { topic, verseRef, verseSummary };
+          render();
+        })
+        .catch((err) => {
+          console.error('Could not save lesson:', err);
+          alert('Could not save this lesson — please check your connection and try again.');
+          if (saveBtn){ saveBtn.disabled = false; saveBtn.textContent = 'Save'; }
+        });
     }
   });
 
-  // ---- Admin sign-in modal ----
+  // ---- Admin sign-in modal (real Firebase accounts) ----
   const adminOverlay = document.getElementById('adminOverlay');
+  const adminEmailInput = document.getElementById('adminEmailInput');
   const adminPasswordInput = document.getElementById('adminPasswordInput');
   const adminError = document.getElementById('adminError');
   const adminCancelBtn = document.getElementById('adminCancelBtn');
@@ -939,8 +967,9 @@
   function openAdminModal(){
     adminOverlay.classList.add('show');
     adminError.classList.remove('show');
+    adminEmailInput.value = '';
     adminPasswordInput.value = '';
-    adminPasswordInput.focus();
+    adminEmailInput.focus();
   }
   function closeAdminModal(){ adminOverlay.classList.remove('show'); }
 
@@ -956,23 +985,44 @@
   adminCancelBtn.addEventListener('click', closeAdminModal);
   adminOverlay.addEventListener('click', (e) => { if (e.target === adminOverlay) closeAdminModal(); });
   adminPasswordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') adminSubmitBtn.click(); });
+  adminEmailInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') adminPasswordInput.focus(); });
 
   adminSubmitBtn.addEventListener('click', () => {
-    if (adminPasswordInput.value === ADMIN_PASSWORD){
-      isAdmin = true;
-      closeAdminModal();
-      setAdminButtonsLabel();
-      adminBanner.classList.add('show');
-      render();
-    } else {
+    const email = adminEmailInput.value.trim();
+    const password = adminPasswordInput.value;
+    if (!email || !password){
+      adminError.textContent = 'Please enter both an email and a password.';
       adminError.classList.add('show');
+      return;
     }
+    adminError.classList.remove('show');
+    adminSubmitBtn.disabled = true;
+    adminSubmitBtn.textContent = 'Signing in…';
+
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        closeAdminModal();
+      })
+      .catch((err) => {
+        console.warn('Sign-in failed:', err.code);
+        adminError.textContent = 'Incorrect email or password. Please try again.';
+        adminError.classList.add('show');
+      })
+      .finally(() => {
+        adminSubmitBtn.disabled = false;
+        adminSubmitBtn.textContent = 'Sign In';
+      });
   });
 
   adminSignOutBtn.addEventListener('click', () => {
-    isAdmin = false;
+    auth.signOut();
+  });
+
+  // Reacts to real sign-in/sign-out, and keeps someone signed in across reloads
+  auth.onAuthStateChanged((user) => {
+    isAdmin = !!user;
     setAdminButtonsLabel();
-    adminBanner.classList.remove('show');
+    adminBanner.classList.toggle('show', isAdmin);
     render();
   });
 
@@ -1055,56 +1105,4 @@
 
       const header = rows[0].map(h => h.trim().toLowerCase());
       const dateIdx = header.findIndex(h => h.includes('date'));
-      const topicIdx = header.findIndex(h => h.includes('topic'));
-      const summaryIdx = header.findIndex(h => h.includes('summary'));
-      const verseRefIdx = header.findIndex((h, idx) => idx !== summaryIdx && (h.includes('reference') || h.includes('verse')));
-
-      let addedCount = 0;
-      for (let i = 1; i < rows.length; i++){
-        const row = rows[i];
-        const iso = parseSheetDate(row[dateIdx]);
-        if (!iso) continue;
-        if (iso < ARCHIVE_START) continue; // don't let sheet rows override locked/pre-archive weeks
-        const existing = lessonContent[iso];
-        if (existing && existing.special) continue; // never override the founding entry
-        lessonContent[iso] = {
-          topic: (row[topicIdx] || '').trim(),
-          verseRef: (row[verseRefIdx] || '').trim(),
-          verseSummary: (row[summaryIdx] || '').trim()
-        };
-        addedCount++;
-      }
-
-      if (syncStatusEl){
-        syncStatusEl.textContent = `✓ Synced (${addedCount} lesson${addedCount === 1 ? '' : 's'} from Google Sheet)`;
-        syncStatusEl.classList.add('is-live');
-      }
-      render();
-    } catch (err){
-      console.warn('Could not load lessons from Google Sheet:', err);
-      if (syncStatusEl){
-        syncStatusEl.textContent = 'Could not load live lesson data — showing saved defaults.';
-        syncStatusEl.classList.add('is-error');
-      }
-    }
-  }
-
-  loadLessonsFromSheet();
-</script>
-<div class="admin-overlay" id="adminOverlay">
-  <div class="admin-modal">
-    <h3>Teacher / Admin Sign In</h3>
-    <p>Enter the ministry admin passcode to unlock lesson editing for this preview.</p>
-    <input type="password" id="adminPasswordInput" placeholder="Passcode" autocomplete="off">
-    <p class="admin-error" id="adminError">Incorrect passcode. Please try again.</p>
-    <div class="admin-modal-actions">
-      <button type="button" class="admin-cancel" id="adminCancelBtn">Cancel</button>
-      <button type="button" class="admin-submit" id="adminSubmitBtn">Sign In</button>
-    </div>
-    <p class="admin-note">Prototype only — this passcode isn't secure, and lesson edits made in Admin Mode are for demo purposes and reset when the page reloads.</p>
-  </div>
-</div>
-
-</bo... (1 KB left)
-secc-kids-archive-8-9.html
-51 KB
+      const topicIdx = header.fi... (4 KB left)
